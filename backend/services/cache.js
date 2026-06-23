@@ -21,9 +21,12 @@ mongoose.Query.prototype.exec = async function () {
     // this is for hydrating mongoose model
     // taking the object returned from JSON.parse and
     // using Query.model (this refers to Query) for Mongoose document methods
-    const doc = new this.model(JSON.parse(cachedValue));
 
-    return doc;
+    const doc = JSON.parse(cachedValue);
+
+    return Array.isArray(doc)
+      ? doc.map((d) => this.model(d))
+      : new this.model(doc);
   }
 
   const result = await exec.apply(this, arguments);
