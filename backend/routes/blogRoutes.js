@@ -16,12 +16,6 @@ module.exports = (app) => {
   });
 
   app.get("/api/blogs", requireLogin, async (req, res) => {
-    const cachedBlogs = await redisClient.get(req.user.id);
-
-    if (cachedBlogs) {
-      return res.send(JSON.parse(cachedBlogs));
-    }
-
     const blogs = await Blog.find({ _user: req.user.id });
 
     res.send(blogs);
