@@ -7,7 +7,17 @@ const redisClient = redis.createClient("redis://127.0.0.1:6379");
 redisClient.on("error", (err) => console.error("Redis Client Error", err));
 redisClient.connect();
 
+// method on Query prototype so we can
+// toggle cache on and off
+mongoose.Query.prototype.cache = function () {
+  this.useCache = true;
+  return this; // for method chaining
+};
+
 mongoose.Query.prototype.exec = async function () {
+  if (!this.useCache) {
+    return exec.apply(this, arguments);
+  }
   // creating a unique key with user id and collection name
   const key = JSON.stringify(
     Object.assign({}, this.getQuery(), {
@@ -25,7 +35,7 @@ mongoose.Query.prototype.exec = async function () {
     const doc = JSON.parse(cachedValue);
 
     return Array.isArray(doc)
-      ? doc.map((d) => this.model(d))
+      ? doc.map((d) => new this.model(d))
       : new this.model(doc);
   }
 
