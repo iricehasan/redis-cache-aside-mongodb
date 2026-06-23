@@ -10,16 +10,15 @@ module.exports = (app) => {
     const blog = await Blog.findOne({
       _user: req.user.id,
       _id: req.params.id,
-    });
+    }).cache();
 
     res.send(blog);
   });
 
   app.get("/api/blogs", requireLogin, async (req, res) => {
-    const blogs = await Blog.find({ _user: req.user.id });
+    const blogs = await Blog.find({ _user: req.user.id }).cache();
 
     res.send(blogs);
-    redisClient.set(req.user.id, JSON.stringify(blogs));
   });
 
   app.post("/api/blogs", requireLogin, async (req, res) => {
