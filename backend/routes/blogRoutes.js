@@ -1,9 +1,8 @@
 const mongoose = require("mongoose");
 const requireLogin = require("../middlewares/requireLogin");
-const redis = require("redis");
+const { clearHash } = require("../services/cache");
 
 const Blog = mongoose.model("Blog");
-const redisClient = redis.createClient("redis://127.0.0.1:6379");
 
 module.exports = (app) => {
   app.get("/api/blogs/:id", requireLogin, async (req, res) => {
@@ -40,5 +39,7 @@ module.exports = (app) => {
     } catch (err) {
       res.send(400, err);
     }
+
+    clearHash(req.user.id);
   });
 };

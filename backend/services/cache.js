@@ -47,3 +47,9 @@ mongoose.Query.prototype.exec = async function () {
   redisClient.expire(this.hashKey, 10);
   return result;
 };
+
+module.exports = {
+  clearHash(hashKey) {
+    redisClient.del(JSON.stringify(hashKey));
+  },
+};
