@@ -10,13 +10,17 @@ module.exports = (app) => {
     const blog = await Blog.findOne({
       _user: req.user.id,
       _id: req.params.id,
-    }).cache();
+    }).cache({
+      key: req.user.id,
+    });
 
     res.send(blog);
   });
 
   app.get("/api/blogs", requireLogin, async (req, res) => {
-    const blogs = await Blog.find({ _user: req.user.id }).cache();
+    const blogs = await Blog.find({ _user: req.user.id }).cache({
+      key: req.user.id,
+    }); // using top level user id as nested hash key
 
     res.send(blogs);
   });

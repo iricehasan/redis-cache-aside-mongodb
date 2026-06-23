@@ -9,8 +9,10 @@ redisClient.connect();
 
 // method on Query prototype so we can
 // toggle cache on and off
-mongoose.Query.prototype.cache = function () {
+mongoose.Query.prototype.cache = function (options = {}) {
   this.useCache = true;
+  this.hashKey = JSON.stringify(options.key || ""); // for nested hashes
+  // use "" with or to prevent undefined
   return this; // for method chaining
 };
 
@@ -25,7 +27,7 @@ mongoose.Query.prototype.exec = async function () {
     }),
   );
 
-  const cachedValue = await redisClient.get(key);
+  const cachedValue = await redisClient.hGet(this.hashKey, key);
 
   if (cachedValue) {
     // this is for hydrating mongoose model
@@ -41,6 +43,7 @@ mongoose.Query.prototype.exec = async function () {
 
   const result = await exec.apply(this, arguments);
 
-  client.set(key, JSON.stringify(result));
+  redisClient.hSet(this.hashKey, key, JSON.stringify(result));
+  redisClient.expire(this.hashKey, 10);
   return result;
 };
